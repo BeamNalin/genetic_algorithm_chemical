@@ -6,13 +6,17 @@ from RD import check
 from error import errorcheck, errorcheck2
 import numpy as np
 
-
-###### Before use test.py -> run mlmodel.py -> run RD.py ########
-
-#input T ที่ต้องการ
+# Define input data
 LowerBound = float(input("Lower TEMPARETURE range IS: "))
 UpperBound = float(input("Upper TEMPARETURE range IS: "))
 
+# Define maximum iteration limit
+max_iterations = 100
+
+# Initialize iteration counter
+iteration = 0
+
+# Define a function to check the error of the selected parameters
 def errorcheck(data):
     showerr =[]
     for i in data["Predict"]:
@@ -29,8 +33,8 @@ def errorcheck2(data):
     data["Error"] = errorcheck(data)
     data1= data.sort_values("Error")
     return data1
-
-# Random
+  
+# Defint the random
 def pop():
     count = 0
     cc =[]
@@ -45,21 +49,11 @@ def pop():
 
     return pd.DataFrame(cc)
 
-random =pop()
-random.columns = ["C","Double", "Triple", "Bracket", "Cyclic"]
-random
 
-#Predict -> ต้องเชื่อมกับตัว ML -> เดี๋ยวต่อกันอีกที
-random["Predict"] = predict_DT(random)
-random
-
-#### random ตรงนี้มี predict แล้ว
-# ----------------------------------------------------------------------------------------#
-
-#Selection
+# Defint the selection
 def rank_selection(a):
     rankk =[]
-    for i in random["Predict"]:
+    for i in random_parameters["Predict"]:
         if i < LowerBound:
             rank = float(abs(i - LowerBound))
         elif i > UpperBound:
@@ -75,13 +69,11 @@ def rank_selection2(b):
     b1_selected = b1.iloc[0:4]
     return b1_selected
 
-
 selected = rank_selection2(random)
 selected
 errorcheck(selected)
 
-## corssover
-
+# Define the crossover function
 def crossover(parent):
     parent=parent.drop(columns=["Predict","rank"])
     p1=parent.iloc[0]
@@ -110,14 +102,8 @@ def crossover(parent):
     nxt_gen_pd=pd.DataFrame(nxt_gen, columns=["C","Double", "Triple", "Bracket", "Cyclic"])
     return nxt_gen_pd
 
-check1=rank_selection2(random)
-print(check1)
-check2=crossover(check1)
-check2["Predict"]=predict_DT(check2)
-print(check2)
 
-## mutate
-
+# Define the mutation function
 def mutate(check2):
     check2=check2.drop(columns=["Predict"])
     rng=rnd(0,10)
@@ -147,60 +133,48 @@ def mutate(check2):
     mut_pd=mut_pd.drop([1])
     return mut_pd
 
-check3=mutate(check2)
-check3["Predict"]=predict_DT(check3)
-check3
 
+# Create an empty dataframe to store the results
+results_df = pd.DataFrame()
 
+# Implement the genetic algorithm
+while iteration < max_iterations:
+    # Get a random set of parameters
+    random_parameters = pop()
+    random_parameters.columns = ["C","Double", "Triple", "Bracket", "Cyclic"]
 
-#distance check after mutate
-check3["rank"] = float(abs(check3["Predict"] - T))
-check3
+    # Predict the output using the random parameters
+    random_parameters["Predict"] = predict_DT(random_parameters)
 
+    # Select the best parameters using rank selection
+    selected_parameters = rank_selection2(random_parameters)
 
-#wrtie csv file
-random.to_csv("random4.csv")
-selected.to_csv("selected4.csv")
-check2.to_csv("crossover4.csv")
-check3.to_csv("mutate4.csv")
+    # Check the error of the selected parameters
+    error = errorcheck(selected_parameters)
 
-
-
-# automaic code
-
-
-
-loop = 0
-countloop = []
-while loop  < 100:
-    random =pop()
-    random.columns = ["C","Double", "Triple", "Bracket", "Cyclic"]
-    #Predict -> ต้องเชื่อมกับตัว ML -> เดี๋ยวต่อกันอีกที
-    random["Predict"] = predict_DT(random)
-    selected = rank_selection2(random)
-    error = errorcheck(selected)
-    if error != 0:
-        check2=crossover(check1)
-        check2["Predict"]=predict_DT(check2)
+    # If the error is zero, append the selected_parameters dataframe to the results_df
+    if error == 0:
+        results_df = results_df.append(selected_parameters)
+    # If the error is non-zero, try crossover and mutation
+    else:
+        check2 = crossover(selected_parameters)
+        check2["Predict"] = predict_DT(check2)
         error = errorcheck(check2)
+
         if error != 0:
-            check3=mutate(check2)
-            check3["Predict"]=predict_DT(check3)
+            check3 = mutate(check2)
+            check3["Predict"] = predict_DT(check3)
             error = errorcheck(check3)
-            if error !=0:
+
+            if error != 0:
                 continue
             else:
                 if check(check3) == True:
+                    results_df = results_df.append(check3)
                     break
-                else:
-                    continue
         else:
             if check(check2) == True:
+                results_df = results_df.append(check2)
                 break
-            else:
-                continue
-    else:
-        if check(selected) == True:
-            break
-        else:
-            continue
+    iteration += 1
+

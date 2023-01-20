@@ -1,7 +1,7 @@
 #error module
 def errorcheck(data):
     showerr =[]
-    for i in data["predict"]:
+    for i in data["Predict"]:
         if i < LowerBound:
             pcerror = float((abs(i-LowerBound)/LowerBound)*100)
         elif i > UpperBound:
