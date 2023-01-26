@@ -13,6 +13,7 @@ import numpy as np
 LowerBound = float(input("Lower TEMPARETURE range IS: "))
 UpperBound = float(input("Upper TEMPARETURE range IS: "))
 
+#add percentage error 
 def errorcheck(data):
     showerr =[]
     for i in data["Predict"]:
@@ -25,6 +26,7 @@ def errorcheck(data):
         showerr.append(pcerror)
     return showerr
 
+#rank percentage error from low to high
 def errorcheck2(data):
     data["Error"] = errorcheck(data)
     data1= data.sort_values("Error")
@@ -51,7 +53,9 @@ random
 
 #Predict -> ต้องเชื่อมกับตัว ML -> เดี๋ยวต่อกันอีกที
 random["Predict"] = predict_DT(random)
-random
+print("Random dataset")
+print(random)
+
 
 #### random ตรงนี้มี predict แล้ว
 # ----------------------------------------------------------------------------------------#
@@ -75,12 +79,12 @@ def rank_selection2(b):
     b1_selected = b1.iloc[0:4]
     return b1_selected
 
-
+print("Selection")
 selected = rank_selection2(random)
 selected
-errorcheck(selected)
+print(errorcheck2(selected))
 
-## corssover
+## crossover
 
 def crossover(parent):
     parent=parent.drop(columns=["Predict","rank"])
@@ -123,7 +127,7 @@ def mutate(check2):
     rng=rnd(0,10)
     if rng < 3:
         print("No Mutation")
-        return
+        return check2
     else:
         rng=rnd(1,10)
         col=rnd(0,3)
@@ -146,7 +150,8 @@ def mutate(check2):
     mut_pd=pd.DataFrame(new, columns=["C","Double", "Triple", "Bracket", "Cyclic"])
     mut_pd=mut_pd.drop([1])
     return mut_pd
-
+ 
+print("Mutate") 
 check3=mutate(check2)
 check3["Predict"]=predict_DT(check3)
 check3
@@ -154,7 +159,13 @@ check3
 
 
 #distance check after mutate
-check3["rank"] = float(abs(check3["Predict"] - T))
+for i in check3["Predict"]:
+        if i < LowerBound:
+            check3["rank"] = float(abs(i-LowerBound))
+        elif i > UpperBound:
+            check3["rank"] = float(abs(i-UpperBound))
+        else:
+            check3["rank"] = 0
 check3
 
 
@@ -172,22 +183,22 @@ check3.to_csv("mutate4.csv")
 
 loop = 0
 countloop = []
-while loop  < 100:
+while loop < 100:
+    loop +=1
     random =pop()
     random.columns = ["C","Double", "Triple", "Bracket", "Cyclic"]
-    #Predict -> ต้องเชื่อมกับตัว ML -> เดี๋ยวต่อกันอีกที
     random["Predict"] = predict_DT(random)
     selected = rank_selection2(random)
     error = errorcheck(selected)
-    if error != 0:
+    if error.all() > 5:
         check2=crossover(check1)
         check2["Predict"]=predict_DT(check2)
         error = errorcheck(check2)
-        if error != 0:
+        if error.all() > 5:
             check3=mutate(check2)
             check3["Predict"]=predict_DT(check3)
             error = errorcheck(check3)
-            if error !=0:
+            if error.all() > 5:
                 continue
             else:
                 if check(check3) == True:
@@ -204,3 +215,4 @@ while loop  < 100:
             break
         else:
             continue
+    
