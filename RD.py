@@ -1,11 +1,19 @@
 #checking for validity
+import pandas as pd
+import numpy as np
+
 def check(ar):
+    if isinstance(ar,pd.DataFrame) == True:
+        ar=ar.to_numpy().T
+
     C=ar[0]
     Double=ar[1]
     Triple=ar[2]
     Bracket=ar[3]
     Cyclic=ar[4]
-    if C == 1 and (Double > 0 or Triple > 0 or Bracket > 0 or Cyclic > 0):
+    if C < 1:
+        return False
+    elif C == 1 and (Double > 0 or Triple > 0 or Bracket > 0 or Cyclic > 0):
         return False
     elif C == 2 and (Double > 1 or Triple > 1 or Bracket > 0 or Cyclic > 0):
         return False

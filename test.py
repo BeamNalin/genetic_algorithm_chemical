@@ -154,7 +154,7 @@ def mutate(check2):
 print("Mutate") 
 check3=mutate(check2)
 check3["Predict"]=predict_DT(check3)
-check3
+print(check3)
 
 
 
@@ -190,29 +190,38 @@ while loop < 100:
     random["Predict"] = predict_DT(random)
     selected = rank_selection2(random)
     error = errorcheck(selected)
-    if error.all() > 5:
+    #print(error) #check error 
+    if error[-1] > 5:
         check2=crossover(check1)
         check2["Predict"]=predict_DT(check2)
         error = errorcheck(check2)
-        if error.all() > 5:
+        if error[-1] > 5:
             check3=mutate(check2)
             check3["Predict"]=predict_DT(check3)
             error = errorcheck(check3)
-            if error.all() > 5:
+            if error[-1] > 5:
                 continue
             else:
                 if check(check3) == True:
+                    print("The SMILES Solution is")
+                    print(check3)
+                    print("The iteration is",loop)
                     break
                 else:
                     continue
         else:
             if check(check2) == True:
+                print("The SMILES Solution is")
+                print(check2)
+                print("The iteration is",loop)
                 break
             else:
                 continue
     else:
         if check(selected) == True:
+            print("The SMILES Solution is")
+            print(selected)
+            print("The iteration is",loop)
             break
         else:
             continue
-    
