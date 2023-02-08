@@ -194,7 +194,7 @@ while loop < 100:
     print(selected)
     print("and error is")
     print(error)
-    if error[0] < 1:
+    if error[0] > 0:
         check2=crossover(check1)
         check2["Predict"]=predict_DT(check2)
         error = errorcheck(check2)
@@ -202,7 +202,7 @@ while loop < 100:
         print(check2)
         print("and error is")
         print(error)
-        if error[0] < 1:
+        if error[0] > 0:
             check3=mutate(check2)
             check3["Predict"]=predict_DT(check3)
             error = errorcheck(check3)
@@ -210,7 +210,7 @@ while loop < 100:
             print(check3)
             print("and error is")
             print(error)
-            if error[0] < 1:
+            if error[0] > 0:
                 continue
             else:
                 if check(check3) == True:
