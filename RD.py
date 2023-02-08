@@ -5,7 +5,7 @@ import numpy as np
 def check(ar):
     if isinstance(ar,pd.DataFrame) == True:
         ar=ar.to_numpy().T
-
+        
     C=ar[0]
     Double=ar[1]
     Triple=ar[2]
