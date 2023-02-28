@@ -134,7 +134,7 @@ def mutate(check2):
         print("the mutate row is",col)
         mut=check2.iloc[col]
         mut=mut.to_numpy().T
-        if rng <= 6:
+        if rng < 0:
             c=rnd(1,12)
             mut[0]=c
         elif rng == 7:
