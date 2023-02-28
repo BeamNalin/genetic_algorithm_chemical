@@ -190,16 +190,27 @@ while loop < 100:
     random["Predict"] = predict_DT(random)
     selected = rank_selection2(random)
     error = errorcheck(selected)
-    #print(error) #check error 
-    if error[-1] > 5:
+    print("Selection")
+    print(selected)
+    print("and error is")
+    print(error)
+    if error[0] > 0:
         check2=crossover(check1)
         check2["Predict"]=predict_DT(check2)
         error = errorcheck(check2)
-        if error[-1] > 5:
+        print("Crossover")
+        print(check2)
+        print("and error is")
+        print(error)
+        if error[0] > 0:
             check3=mutate(check2)
             check3["Predict"]=predict_DT(check3)
             error = errorcheck(check3)
-            if error[-1] > 5:
+            print("Mutate")
+            print(check3)
+            print("and error is")
+            print(error)
+            if error[0] > 0:
                 continue
             else:
                 if check(check3) == True:
@@ -210,17 +221,17 @@ while loop < 100:
                 else:
                     continue
         else:
-            if check(check2) == True:
+            if check(check2.iloc[0]) == True:
                 print("The SMILES Solution is")
-                print(check2)
+                print(check2.iloc[0])
                 print("The iteration is",loop)
                 break
             else:
                 continue
     else:
-        if check(selected) == True:
+        if check(selected.iloc[0]) == True:
             print("The SMILES Solution is")
-            print(selected)
+            print(selected.iloc[0])
             print("The iteration is",loop)
             break
         else:
