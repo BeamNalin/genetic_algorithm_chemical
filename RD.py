@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 def check(ar):
-    if isinstance(ar,pd.DataFrame) == True:
+    if isinstance(ar,pd.DataFrame):
         ar=ar.to_numpy().T
         
     C=ar[0]
