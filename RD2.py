@@ -17,4 +17,17 @@ def check(ar):
 
     if CRe < 1:
         return False
-    elif 
+    elif (2*DoubleCCRe)+(2*TripleCC)+(Bracket)+(6*Benzene)+(3*CycleRe)+(SingleCO)+(2*DoubleCO) > CRe:
+        return False
+    elif DoubleCCRe+TripleCC+Benzene+SingleCO+DoubleCO > 2*CRe:
+        return False
+    elif DoubleCCRe+TripleCC > CRe:
+        return False
+    elif Bracket+CycleRe > CRe:
+        return False
+    elif SingleCO+2*DoubleCO > CRe:
+        return False
+    elif Benzene+CycleRe > CRe:
+        return False
+    else :
+       return True
