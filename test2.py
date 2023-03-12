@@ -41,7 +41,7 @@ def pop():
     count = 0
     cc =[]
     while count <  10 :
-        carbon = [rnd(1, 12), rnd(0, 6), rnd(0, 4), rnd(0, 10), rnd(0, 4),rnd(0, 10), rnd(0, 3)]  #มาแก้ตรงนี้ค่าที่สุ่ม
+        carbon = [rnd(1, 12), rnd(0, 6), rnd(0, 4), rnd(0, 10),rnd(0,2) , rnd(0, 4),rnd(0, 10), rnd(0, 3)]  #มาแก้ตรงนี้ค่าที่สุ่ม
         checkk = check(carbon)
         if checkk == True:
             cc.append(carbon)
@@ -52,7 +52,7 @@ def pop():
     return pd.DataFrame(cc)
 
 random =pop()
-random.columns = ["CRe","DoubleCCRe", "TripleCC", "Bracket", "Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
+random.columns = ["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
 random
 
 #Predict -> ต้องเชื่อมกับตัว ML -> เดี๋ยวต่อกันอีกที
@@ -90,32 +90,29 @@ print(errorcheck2(selected))
 
 ## crossover
 
-def crossover(parents):
-    offsprings = []
-    for i, p1 in enumerate(parents):
-        for j, p2 in enumerate(parents):
-            if i != j:  # avoid crossover with the same parent
-                p1 = p1.drop(columns=["Predict", "rank"])
-                p2 = p2.drop(columns=["Predict", "rank"])
-                p1 = p1.to_numpy().T
-                p2 = p2.to_numpy().T
-                pt = np.random.randint(1, 4)
-                off1 = p1[:pt]
-                off2 = p2[pt:]
-                c1 = np.concatenate((off1, off2))
-                off1 = p2[:pt]
-                off2 = p1[pt:]
-                c2 = np.concatenate((off1, off2))
-                nxt_gen = np.vstack((c1, c2))
-                nxt_gen_pd = pd.DataFrame(nxt_gen, columns=["CRe","DoubleCCRe", "TripleCC", "Bracket", "Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
-                offsprings.append(nxt_gen_pd)
-    return offsprings
+def crossover(parent):
+    parent = parent.drop(columns=["Predict", "rank"])
+    num_parents = parent.shape[0]
+    offspring = []
+    for i in range(num_parents):
+        for j in range(i+1, num_parents):
+            p1 = parent.iloc[i].to_numpy()
+            p2 = parent.iloc[j].to_numpy()
+            pt = np.random.randint(1, p1.shape[0])
+            print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
+            off1 = np.concatenate((p1[:pt], p2[pt:]))
+            off2 = np.concatenate((p2[:pt], p1[pt:]))
+            offspring.append(off1)
+            offspring.append(off2)
+    offspring_pd = pd.DataFrame(offspring, columns=["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
+    return offspring_pd
+
 
 check1=rank_selection2(random)
 print(check1)
 check2=crossover(check1)
-check2["Predict"]=predict_DT(check2)
 print(check2)
+check2["Predict"]=predict_DT_LogS(check2)
 
 ## mutate
 
@@ -127,7 +124,7 @@ def mutate(check2):
         return check2
     else:
         rng=rnd(1,10)
-        col=rnd(0,6)
+        col=rnd(0,3)
         print("the mutate row is",col)
         mut=check2.iloc[col]
         mut=mut.to_numpy().T
@@ -148,13 +145,13 @@ def mutate(check2):
             mut[6]=rnd(0,3)
     temp=np.arange(7)
     new=np.vstack((mut,temp))
-    mut_pd=pd.DataFrame(new, columns=["CRe","DoubleCCRe", "TripleCC", "Bracket", "Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
+    mut_pd=pd.DataFrame(new, columns=["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
     mut_pd=mut_pd.drop([1])
     return mut_pd
  
 print("Mutate") 
 check3=mutate(check2)
-check3["Predict"]=predict_DT(check3)
+check3["Predict"]=predict_DT_LogS(check3)
 print(check3)
 
 
@@ -187,8 +184,8 @@ countloop = []
 while loop < 100:
     loop +=1
     random =pop()
-    random.columns = ["CRe","DoubleCCRe", "TripleCC", "Bracket", "Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
-    random["Predict"] = predict_DT(random)
+    random.columns = ["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
+    random["Predict"] = predict_DT_LogS(random)
     selected = rank_selection2(random)
     error = errorcheck(selected)
     print("Selection")
@@ -197,7 +194,7 @@ while loop < 100:
     print(error)
     if error[0] > 0:
         check2=crossover(check1)
-        check2["Predict"]=predict_DT(check2)
+        check2["Predict"]=predict_DT_LogS(check2)
         error = errorcheck(check2)
         print("Crossover")
         print(check2)
@@ -205,7 +202,7 @@ while loop < 100:
         print(error)
         if error[0] > 0:
             check3=mutate(check2)
-            check3["Predict"]=predict_DT(check3)
+            check3["Predict"]=predict_DT_LogS(check3)
             error = errorcheck(check3)
             print("Mutate")
             print(check3)
