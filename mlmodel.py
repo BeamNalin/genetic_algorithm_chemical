@@ -27,7 +27,6 @@ DT.score(x_test, y_test)
 #MODULE
 
 def predict_DT(data):
-    print(data)
     DT.predict(data)
     return DT.predict(data)
 

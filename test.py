@@ -36,7 +36,7 @@ def errorcheck2(data):
 def pop():
     count = 0
     cc =[]
-    while count <  10 :
+    while count <  1000 :
         carbon = [rnd(1, 12), rnd(0, 6), rnd(0, 4), rnd(0, 10), rnd(0, 4)]  #มาแก้ตรงนี้ค่าที่สุ่ม
         checkk = check(carbon)
         if checkk == True:
@@ -76,7 +76,7 @@ def rank_selection(a):
 def rank_selection2(b):
     b["rank"] = rank_selection(b)
     b1= b.sort_values("rank")
-    b1_selected = b1.iloc[0:4]
+    b1_selected = b1.iloc[0:128]
     return b1_selected
 
 
@@ -254,6 +254,7 @@ for loop in range(iteration):
             check2 = pd.concat([check2, check3])
             
             if error[0] > 5:
+                dataset=check2
                 continue   
             else:
                 if check(check3):
