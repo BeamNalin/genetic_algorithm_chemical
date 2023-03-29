@@ -34,11 +34,11 @@ LogP_LowerBound = -3
 LogP_UpperBound = -1
 
 #error weigh
-LogP_weight =  0.2
-LogS_weight = 0.2
-Hansen_Polarity_weight= 0.2
-Hansen_Hbond_weight = 0.2
-Hansen_dis_weight = 0.2
+LogP_weight =  0.3
+LogS_weight = 0.4
+Hansen_Polarity_weight= 0.1
+Hansen_Hbond_weight = 0.15
+Hansen_dis_weight = 0.05
 #------------------------------------------------------#
 parameter_bounds = {
     "LogS": [LogS_LowerBound, LogS_UpperBound],
@@ -53,44 +53,44 @@ parameter_bounds = {
 #---------------------------------------------------------#
 
 #add percentage error of 6 input
-def errorcheck_old(data):
-    showerr = []
-    for i in range(len(data)):
-        error = []
-        if data.iloc[i]["Predict_LogS"] < LogS_LowerBound:
-            error += (abs(data.iloc[i]["Predict_LogS"] - LogS_LowerBound) / LogS_LowerBound) * 100
-        elif data.iloc[i]["Predict_LogS"] > LogS_UpperBound:
-            error += (abs(data.iloc[i]["Predict_LogS"] - LogS_UpperBound) / LogS_UpperBound) * 100
+# def errorcheck_old(data):
+#     showerr = []
+#     for i in range(len(data)):
+#         error = []
+#         if data.iloc[i]["Predict_LogS"] < LogS_LowerBound:
+#             error += (abs(data.iloc[i]["Predict_LogS"] - LogS_LowerBound) / LogS_LowerBound) * 100
+#         elif data.iloc[i]["Predict_LogS"] > LogS_UpperBound:
+#             error += (abs(data.iloc[i]["Predict_LogS"] - LogS_UpperBound) / LogS_UpperBound) * 100
 
         
-        if data.iloc[i]["Predict_LogP"] < LogP_LowerBound:
-            error += (abs(data.iloc[i]["Predict_LogP"] - LogP_LowerBound) / LogP_LowerBound) * 100
-        elif data.iloc[i]["Predict_LogP"] > LogP_UpperBound:
-            error += (abs(data.iloc[i]["Predict_LogP"] - LogP_UpperBound) / LogP_UpperBound) * 100
+#         if data.iloc[i]["Predict_LogP"] < LogP_LowerBound:
+#             error += (abs(data.iloc[i]["Predict_LogP"] - LogP_LowerBound) / LogP_LowerBound) * 100
+#         elif data.iloc[i]["Predict_LogP"] > LogP_UpperBound:
+#             error += (abs(data.iloc[i]["Predict_LogP"] - LogP_UpperBound) / LogP_UpperBound) * 100
             
-        if data.iloc[i]["Predict_Hansen_dis"] < Hansen_dis_LowerBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_dis"] - Hansen_dis_LowerBound) / Hansen_dis_LowerBound) * 100
-        elif data.iloc[i]["Predict_Hansen_dis"] > Hansen_dis_UpperBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_dis"] - Hansen_dis_UpperBound) / Hansen_dis_UpperBound) * 100
+#         if data.iloc[i]["Predict_Hansen_dis"] < Hansen_dis_LowerBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_dis"] - Hansen_dis_LowerBound) / Hansen_dis_LowerBound) * 100
+#         elif data.iloc[i]["Predict_Hansen_dis"] > Hansen_dis_UpperBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_dis"] - Hansen_dis_UpperBound) / Hansen_dis_UpperBound) * 100
             
-        if data.iloc[i]["Predict_Hansen_H_bond"] < Hansen_Hbond_LowerBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_H_bond"] - Hansen_Hbond_LowerBound) / Hansen_Hbond_LowerBound) * 100
-        elif data.iloc[i]["Predict_Hansen_H_bond"] > Hansen_Hbond_UpperBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_H_bond"] - Hansen_Hbond_UpperBound) / Hansen_Hbond_UpperBound) * 100
+#         if data.iloc[i]["Predict_Hansen_H_bond"] < Hansen_Hbond_LowerBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_H_bond"] - Hansen_Hbond_LowerBound) / Hansen_Hbond_LowerBound) * 100
+#         elif data.iloc[i]["Predict_Hansen_H_bond"] > Hansen_Hbond_UpperBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_H_bond"] - Hansen_Hbond_UpperBound) / Hansen_Hbond_UpperBound) * 100
             
-        if data.iloc[i]["Predict_Hansen_Polarity"] < Hansen_Polarity_LowerBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_Polarity"] - Hansen_Polarity_LowerBound) / Hansen_Polarity_LowerBound) * 100
-        elif data.iloc[i]["Predict_Hansen_Polarity"] > Hansen_Polarity_UpperBound:
-            error += (abs(data.iloc[i]["Predict_Hansen_Polarity"] - Hansen_Polarity_UpperBound) / Hansen_Polarity_UpperBound) * 100
+#         if data.iloc[i]["Predict_Hansen_Polarity"] < Hansen_Polarity_LowerBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_Polarity"] - Hansen_Polarity_LowerBound) / Hansen_Polarity_LowerBound) * 100
+#         elif data.iloc[i]["Predict_Hansen_Polarity"] > Hansen_Polarity_UpperBound:
+#             error += (abs(data.iloc[i]["Predict_Hansen_Polarity"] - Hansen_Polarity_UpperBound) / Hansen_Polarity_UpperBound) * 100
 
-        error[0] *= LogS_weight
-        error[1] *= LogP_weight
-        error[2] *= Hansen_dis_weight
-        error[3] *= Hansen_Hbond_weight
-        error[4] *= Hansen_Polarity_weight
-        showerr.append(error)
-        print(showerr)
-    return showerr
+#         error[0] *= LogS_weight
+#         error[1] *= LogP_weight
+#         error[2] *= Hansen_dis_weight
+#         error[3] *= Hansen_Hbond_weight
+#         error[4] *= Hansen_Polarity_weight
+#         showerr.append(error)
+#         print(showerr)
+#     return showerr
 
 def errorcheck(data):
     showerr = []
@@ -170,14 +170,14 @@ def rank_selection(population):
 def rank_selection2(population):
     selected_columns = ["Predict_Hansen_dis", "Predict_LogP", "Predict_LogS", "Predict_Hansen_H_bond", "Predict_Hansen_Polarity"]
     population['rank'] = rank_selection(population[selected_columns])
-    selected = population.sort_values('rank').iloc[:128]
+    selected = population.sort_values('rank').iloc[:100]
     return selected
 
 #----------------------------------------------------------------#
 ## crossover
 
 def crossover(parent):
-    parent = parent.drop(columns=["Predict_Hansen_dis","Predict_LogP","Predict_LogS","Predict_Hansen_H_bond","Predict_Hansen_Polarity", "rank"])
+    parent = parent.drop(columns=["Predict_Hansen_dis","Predict_LogP","Predict_LogS","Predict_Hansen_H_bond","Predict_Hansen_Polarity", "error"])
     num_parents = parent.shape[0]
     offspring = []
     for i in range(num_parents):
@@ -185,7 +185,7 @@ def crossover(parent):
             p1 = parent.iloc[i].to_numpy()
             p2 = parent.iloc[j].to_numpy()
             pt = np.random.randint(1, p1.shape[0])
-            print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
+            # print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
             off1 = np.concatenate((p1[:pt], p2[pt:]))
             off2 = np.concatenate((p2[:pt], p1[pt:]))
             offspring.append(off1)
@@ -197,8 +197,8 @@ def crossover(parent):
 
 def mutate(check22):
     check22= check22[["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]]
-    rng=rnd(0,10)
-    if rng < 3:
+    rng=rnd(1,10)
+    if rng < 2:
         print("No Mutation")
         return check2
     else:
@@ -279,15 +279,23 @@ def errorcheck(data):
 # check3.to_csv("mutate4.csv")
 
 #------------------------- automaic code ----------------------#
+# random 1000 select 100 เช็ค avg/min error
+# cross and mutate รวมทุกตัว เช็ค avg/min error
 
 loop = 0
 countloop = []
 dataset = pop()
 
+all_selected = pd.DataFrame()
+all_crossover = pd.DataFrame()
+all_mutate = pd.DataFrame()
+
 dataset.columns = ["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
+dataset.to_csv("random.csv")
 iteration = 10
 for loop in range(iteration):
     print("loop", loop+1)
+    iter_pd = pd.DataFrame(["iterration",(loop+1)])
     dataset = dataset[["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]]
     dataset_use=dataset.copy()
     dataset["Predict_LogS"] = predict_DT_LogS(dataset_use)
@@ -295,18 +303,25 @@ for loop in range(iteration):
     dataset["Predict_Hansen_Polarity"] = predict_DT_Hansen_Polarity(dataset_use)
     dataset["Predict_Hansen_dis"] = predict_DT_Hansen_dis(dataset_use)
     dataset["Predict_Hansen_H_bond"] = predict_DT_Hansen_Hbond(dataset_use)
-    selected = rank_selection2(dataset)
-    error = errorcheck(selected)
-    selected["error"] = error
-    selected = selected.sort_values('error')
+    # selected = rank_selection2(dataset)
+    error = errorcheck(dataset)
+    dataset["error"] = error
+    selected = dataset.sort_values('error').iloc[:100]
+    all_selected = pd.concat([all_selected,iter_pd], axis=0)
+    all_selected = pd.concat([all_selected,selected], axis=0) # append to main dataframe
+
+    # all_selected.append(loop+1)
+    # all_selected.append(selected)
+    #selected.to_csv("selected.csv")
     print("Selection")
     print(selected)
     print("and error is")
-    print(selected["error"])
+    print(selected["error"].iloc[:4])
+    
     if selected["error"].iloc[0] > 0:
-        check1=rank_selection2(dataset)
-        check2=crossover(check1)
-        print(check2)
+        # check1=rank_selection2(dataset)
+        check2=crossover(selected)
+        # print(check2)
         check22 = check2.copy()
         check22["Predict_LogS"] = predict_DT_LogS(check2)
         check22["Predict_LogP"] = predict_DT_logP(check2)
@@ -315,13 +330,17 @@ for loop in range(iteration):
         check22["Predict_Hansen_H_bond"] = predict_DT_Hansen_Hbond(check2)
         error = errorcheck(check22)
         check22["error"] = error
+        check22 = pd.concat([check22,selected], axis=0) #ใส่ตัว parents ด้วย
         check22 = check22.sort_values('error')
+        all_crossover = pd.concat([all_crossover,iter_pd], axis=0)
+        all_crossover = pd.concat([all_crossover,check22], axis=0) # append to main dataframe
+
+        #check22.to_csv("crossover.csv")
         print("Crossover")
-        print(check2)
+        print(check22)
         print("and error is")
-        print(check22["error"])
+        print(check22["error"].iloc[:4])
         if check22["error"].iloc[0] > 0:
-            ### last step that not working ####
             check3=mutate(check22)
             check33=check3.copy()
             check33["Predict_LogS"] = predict_DT_LogS(check3)
@@ -332,27 +351,32 @@ for loop in range(iteration):
             error = errorcheck(check33)
             check33["error"] = error
             check33 = check33.sort_values('error')
-            print("Mutate")
+            check22 = pd.concat([check22, check33])
+            all_mutate = pd.concat([all_mutate, iter_pd], axis=0) # append to main dataframe
+            all_mutate = pd.concat([all_mutate, check33], axis=0) # append to main dataframe
+            print(check22)
+
+            print("Mutate") 
             print(check33)
             print("and error is")
-            print(error)
-            check22 = pd.concat([check22, check33])
+            print(check33["error"].iloc[:4])
+            
             if check33["error"].iloc[0] > 0:
                 dataset = check22
                 continue
             else:
-                if check(check3) == True:
+                if check(check33) == True:
                     print("The SMILES Solution is")
-                    print(check3)
+                    print(check33)
                     print("The iteration is",loop)
                     break
                 else:
                     dataset = check22
                     continue
         else:
-            if check(check2.iloc[0]) == True:
+            if check(check22.iloc[0]) == True:
                 print("The SMILES Solution is")
-                print(check2.iloc[0])
+                print(check22.iloc[0])
                 print("The iteration is",loop)
                 break
             else:
@@ -367,3 +391,15 @@ for loop in range(iteration):
         else:
             dataset = selected
             continue
+else:
+    print("Maximum number of iterations reached.")
+    if check(dataset.iloc[0]) == True:
+            print("The SMILES Solution is")
+            print(selected.iloc[0])
+            print("The iteration is",loop+1)
+    else:
+        print("No result was found")
+
+all_selected.to_csv("selected.csv")
+all_crossover.to_csv("crossover.csv")
+all_mutate.to_csv("mutate.csv")

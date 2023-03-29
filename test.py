@@ -286,6 +286,12 @@ for loop in range(iteration):
             continue
 else:
     print("Maximum number of iterations reached.")
+    if check(dataset.iloc[0]) == True:
+            print("The SMILES Solution is")
+            print(selected.iloc[0])
+            print("The iteration is",loop)
+    else:
+        print("No result was found")
 
 
 
