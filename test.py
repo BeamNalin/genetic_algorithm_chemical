@@ -10,8 +10,11 @@ import numpy as np
 ###### Before use test.py -> run mlmodel.py -> run RD.py ########
 
 #input T ที่ต้องการ
-LowerBound = float(input("Lower TEMPARETURE range IS: "))
-UpperBound = float(input("Upper TEMPARETURE range IS: "))
+# LowerBound = float(input("Lower TEMPARETURE range IS: "))
+# UpperBound = float(input("Upper TEMPARETURE range IS: "))
+
+LowerBound = 350
+UpperBound = 355
 
 #add percentage error 
 def errorcheck(data):
@@ -76,7 +79,7 @@ def rank_selection(a):
 def rank_selection2(b):
     b["rank"] = rank_selection(b)
     b1= b.sort_values("rank")
-    b1_selected = b1.iloc[0:128]
+    b1_selected = b1.iloc[0:100]
     return b1_selected
 
 
@@ -88,7 +91,8 @@ def rank_selection2(b):
 ## crossover
 
 def crossover(parent):
-    parent = parent.drop(columns=["Predict", "rank"])
+    # parent = parent.drop(columns=["Predict", "rank"])
+    parent = parent[["C", "Double", "Triple", "Bracket", "Cyclic"]]
     num_parents = parent.shape[0]
     offspring = []
     for i in range(num_parents):
@@ -96,7 +100,7 @@ def crossover(parent):
             p1 = parent.iloc[i].to_numpy()
             p2 = parent.iloc[j].to_numpy()
             pt = np.random.randint(1, p1.shape[0])
-            print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
+            # print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
             off1 = np.concatenate((p1[:pt], p2[pt:]))
             off2 = np.concatenate((p2[:pt], p1[pt:]))
             offspring.append(off1)
@@ -114,7 +118,7 @@ def crossover(parent):
 
 ## mutate
 
-def mutate(check2):
+def mutate_old(check2):
     check2=check2.drop(columns=["Predict","rank"])
     rng=rnd(0,10)
     if rng < 3:
@@ -143,6 +147,35 @@ def mutate(check2):
     mut_pd=mut_pd.drop([1])
     return mut_pd
  
+def mutate(selected):
+    selected = selected[["C", "Double", "Triple", "Bracket", "Cyclic"]]
+    mutated_rows = pd.DataFrame(columns=["C", "Double", "Triple", "Bracket", "Cyclic"])
+    for index in range(100):
+        rng = rnd(0, 10)
+        mut = selected.iloc[index].to_numpy()
+        mut = mut.T
+        if rng < 3:
+            mutated_rows = mutated_rows.append(selected.iloc[index], ignore_index=True)
+        else:
+            rng = rnd(1, 10)
+            if rng > 0:
+                c = rnd(mut[0] - 3, mut[0] + 3)
+                if c < 0:
+                    c=0
+            elif rng == 7:
+                mut[1] = rnd(0, mut[0] - 1)
+            elif rng == 8:
+                mut[2] = rnd(0, 2)
+            elif rng == 9:
+                mut[3] = rnd(0, 5)
+            elif rng == 10:
+                mut[4] = rnd(0, 3)
+            temp = np.arange(5)
+            new = np.vstack((mut, temp))
+            mutated_row = pd.DataFrame(new, columns=["C", "Double", "Triple", "Bracket", "Cyclic"])
+            mutated_row = mutated_row.drop([1])
+            mutated_rows = mutated_rows.append(mutated_row, ignore_index=True)
+    return mutated_rows
 # print("Mutate") 
 # check3=mutate(check2)
 # check3["Predict"]=predict_DT(check3)
@@ -216,44 +249,63 @@ def mutate(check2):
 #             continue
 
 #version 2
+loop=0
 dataset = pop()
 dataset.columns = ["C","Double", "Triple", "Bracket", "Cyclic"]
+all_selected = pd.DataFrame()
+all_crossover = pd.DataFrame()
+all_mutate = pd.DataFrame()
+
+
+dataset.to_csv("random_Tb.csv")
 iteration = 100
 for loop in range(iteration):
     print("loop", loop+1)
-
+    iter_pd = pd.DataFrame(["iterration",(loop+1)])
     dataset = dataset[["C", "Double", "Triple", "Bracket", "Cyclic"]]
     dataset["Predict"] = predict_DT(dataset)
-    selected = rank_selection2(dataset)
-    error = errorcheck(selected)
-    
+    # selected = rank_selection2(dataset)
+    error = errorcheck(dataset)
+    dataset["Error"] = error
+    selected = dataset.sort_values('Error').iloc[:100]
+    all_selected = pd.concat([all_selected,iter_pd], axis=0)
+    all_selected = pd.concat([all_selected,selected], axis=0) # append to main dataframe
     print("Selection")
     print(selected)
     print("and error is")
-    print(error)
+    print(selected["Error"].iloc[:5])
     
-    if error[0] > 5:
+    if error[0] > 0:
         check2 = crossover(selected)
         check2["Predict"] = predict_DT(check2)
-        check2 = rank_selection2(check2)
+        # check2 = rank_selection2(check2)
         error = errorcheck(check2)
-        
+        check2["Error"] = error
+        check2 = pd.concat([check2,selected], axis=0)
+        check2 = check2.sort_values('Error')
+        all_crossover = pd.concat([all_crossover,iter_pd], axis=0)
+        all_crossover = pd.concat([all_crossover,check2], axis=0) # append to main dataframe
         print("Crossover")
         print(check2)
         print("and error is")
-        print(error)
+        print(check2["Error"].iloc[:5])
         
-        if error[0] > 5:
+        if error[0] > 0:
             check3 = mutate(selected.copy())
             check3["Predict"] = predict_DT(check3)
+            error = errorcheck(check3)
+            check3["Error"] = error
+
+            all_mutate = pd.concat([all_mutate, iter_pd], axis=0) # append to main dataframe
+            all_mutate = pd.concat([all_mutate, check3], axis=0) # append to main dataframe
             print("Mutate")
             print(check3)
             print("and error is")
-            print(error)
+            print(check3["Error"].iloc[:5])
             
             check2 = pd.concat([check2, check3])
             
-            if error[0] > 5:
+            if error[0] > 0:
                 dataset=check2
                 continue   
             else:
@@ -293,5 +345,7 @@ else:
     else:
         print("No result was found")
 
-
+all_selected.to_csv("selected_tb.csv")
+all_crossover.to_csv("crossover_tb.csv")
+all_mutate.to_csv("mutate_tb.csv")
 
