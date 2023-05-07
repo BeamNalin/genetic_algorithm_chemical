@@ -10,35 +10,36 @@ from mlmodel_LogS import model, predict_DT_LogS
 from RD2 import check
 from error import errorcheck, errorcheck2
 import numpy as np
+import time as tm
 
 ###### Before use test2.py -> run all mlmodel.py -> run RD2.py ########
 #input Hansen_dis
-Hansen_dis_LowerBound = 10
+Hansen_dis_LowerBound = 18
 Hansen_dis_UpperBound = 20
 
 #input Hansen_Hbond
-Hansen_Hbond_LowerBound = 1
-Hansen_Hbond_UpperBound = 3
+Hansen_Hbond_LowerBound = 8
+Hansen_Hbond_UpperBound = 10
 
 #input Hansen_Polarity
-Hansen_Polarity_LowerBound = 3
-Hansen_Polarity_UpperBound = 5
+Hansen_Polarity_LowerBound = 4
+Hansen_Polarity_UpperBound = 6
 
 #input LogS
-LogS_LowerBound = -3
-LogS_UpperBound = -1
+LogS_LowerBound = 1
+LogS_UpperBound = 3
 
 
 #input LogP
-LogP_LowerBound = -3
-LogP_UpperBound = -1
+LogP_LowerBound = 2
+LogP_UpperBound = 3
 
 #error weigh
-LogP_weight =  0.3
-LogS_weight = 0.4
-Hansen_Polarity_weight= 0.1
-Hansen_Hbond_weight = 0.15
-Hansen_dis_weight = 0.05
+LogP_weight = 0
+LogS_weight = 0.5
+Hansen_Polarity_weight= 0.5
+Hansen_Hbond_weight = 0
+Hansen_dis_weight = 0
 #------------------------------------------------------#
 parameter_bounds = {
     "LogS": [LogS_LowerBound, LogS_UpperBound],
@@ -177,7 +178,7 @@ def rank_selection2(population):
 ## crossover
 
 def crossover(parent):
-    parent = parent.drop(columns=["Predict_Hansen_dis","Predict_LogP","Predict_LogS","Predict_Hansen_H_bond","Predict_Hansen_Polarity", "error"])
+    parent = parent[["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]]
     num_parents = parent.shape[0]
     offspring = []
     for i in range(num_parents):
@@ -188,8 +189,10 @@ def crossover(parent):
             # print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
             off1 = np.concatenate((p1[:pt], p2[pt:]))
             off2 = np.concatenate((p2[:pt], p1[pt:]))
-            offspring.append(off1)
-            offspring.append(off2)
+            if check(off1):
+                offspring.append(off1)
+            if check(off2):
+                offspring.append(off2)
     offspring_pd = pd.DataFrame(offspring, columns=['CRe', 'DoubleCCRe', 'TripleCC', 'Bracket', 'Benzene', 'CycleRe', 'SingleCO', 'DoubleCO'])
     return offspring_pd
 
@@ -197,36 +200,42 @@ def crossover(parent):
 
 def mutate(check22):
     check22= check22[["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]]
-    rng=rnd(1,10)
-    if rng < 2:
-        print("No Mutation")
-        return check2
-    else:
+    mutated_rows = pd.DataFrame(columns=["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
+    for index in range(100):
         rng=rnd(1,10)
-        col=rnd(0,8)
-        print("the mutate row is",col)
-        mut=check2.iloc[col]
-        mut=mut.to_numpy().T
-        if col == 0:
-            c=rnd(1,12)
-            mut[0]=c
-        elif col == 1:
-            mut[1]=rnd(0,mut[0]-1)
-        elif col == 2:
-            mut[2]=rnd(0,2)
-        elif col == 3:
-            mut[3]=rnd(0,5)
-        elif col == 4:
-            mut[4]=rnd(0,3)
-        elif col == 5:
-            mut[5]=rnd(0,10)
-        elif col == 6:
-            mut[6]=rnd(0,3)
-    temp=np.arange(8)
-    new=np.vstack((mut,temp))
-    mut_pd=pd.DataFrame(new, columns=["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
-    mut_pd=mut_pd.drop([1])
-    return mut_pd
+        mut = check22.iloc[index].to_numpy()
+        mut = mut.T
+        if rng < 3:
+            if check(mut):
+                mutated_rows = mutated_rows.append(check22.iloc[index], ignore_index=True)
+        else:
+            col=rnd(0,8)
+            # print("the mutate row is",col)
+            # mut=check2.iloc[col]
+            if col == 0:
+                c=rnd(mut[0] - 3, mut[0] + 3)
+                if c < 0:
+                    c=1
+                mut[0]=c
+            elif col == 1:
+                mut[1]=rnd(0,mut[0]-1)
+            elif col == 2:
+                mut[2]=rnd(0,2)
+            elif col == 3:
+                mut[3]=rnd(0,5)
+            elif col == 4:
+                mut[4]=rnd(0,3)
+            elif col == 5:
+                mut[5]=rnd(0,10)
+            elif col == 6:
+                mut[6]=rnd(0,3)
+            temp=np.arange(8)
+            new=np.vstack((mut,temp))
+            mut_pd=pd.DataFrame(new, columns=["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"])
+            mut_pd=mut_pd.drop([1])
+            if check(mut):
+                mutated_rows = mutated_rows.append(mut_pd, ignore_index=True)
+    return mutated_rows
  
 def errorcheck(data):
     showerr = []
@@ -292,8 +301,10 @@ all_mutate = pd.DataFrame()
 
 dataset.columns = ["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]
 dataset.to_csv("random.csv")
-iteration = 10
-for loop in range(iteration):
+iteration = 100
+minerr = 0
+start = tm.time()
+for loop in range(iteration): 
     print("loop", loop+1)
     iter_pd = pd.DataFrame(["iterration",(loop+1)])
     dataset = dataset[["CRe","DoubleCCRe","TripleCC","Bracket","Benzene","CycleRe","SingleCO","DoubleCO"]]
@@ -316,9 +327,9 @@ for loop in range(iteration):
     print("Selection")
     print(selected)
     print("and error is")
-    print(selected["error"].iloc[:4])
+    print(selected["error"].iloc[:5])
     
-    if selected["error"].iloc[0] > 0:
+    if selected["error"].iloc[0] > minerr:
         # check1=rank_selection2(dataset)
         check2=crossover(selected)
         # print(check2)
@@ -339,8 +350,8 @@ for loop in range(iteration):
         print("Crossover")
         print(check22)
         print("and error is")
-        print(check22["error"].iloc[:4])
-        if check22["error"].iloc[0] > 0:
+        print(check22["error"].iloc[:5])
+        if check22["error"].iloc[0] > minerr:
             check3=mutate(check22)
             check33=check3.copy()
             check33["Predict_LogS"] = predict_DT_LogS(check3)
@@ -359,16 +370,16 @@ for loop in range(iteration):
             print("Mutate") 
             print(check33)
             print("and error is")
-            print(check33["error"].iloc[:4])
+            print(check33["error"].iloc[:5])
             
-            if check33["error"].iloc[0] > 0:
+            if check33["error"].iloc[0] > minerr:
                 dataset = check22
                 continue
             else:
                 if check(check33) == True:
                     print("The SMILES Solution is")
-                    print(check33)
-                    print("The iteration is",loop)
+                    print(check33.loc[check33['error'] <= minerr])
+                    print("The iteration is",loop+1)
                     break
                 else:
                     dataset = check22
@@ -376,8 +387,8 @@ for loop in range(iteration):
         else:
             if check(check22.iloc[0]) == True:
                 print("The SMILES Solution is")
-                print(check22.iloc[0])
-                print("The iteration is",loop)
+                print(check22.loc[check22['error'] <= minerr])
+                print("The iteration is",loop+1)
                 break
             else:
                 dataset = check22
@@ -385,8 +396,8 @@ for loop in range(iteration):
     else:
         if check(selected.iloc[0]) == True:
             print("The SMILES Solution is")
-            print(selected.iloc[0])
-            print("The iteration is",loop)
+            print(selected.loc[selected['error'] <= minerr])
+            print("The iteration is",loop+1)
             break
         else:
             dataset = selected
@@ -394,12 +405,14 @@ for loop in range(iteration):
 else:
     print("Maximum number of iterations reached.")
     if check(dataset.iloc[0]) == True:
-            print("The SMILES Solution is")
+            print("The closest SMILES Solution is")
             print(selected.iloc[0])
             print("The iteration is",loop+1)
     else:
         print("No result was found")
 
+end = tm.time()
+print("Elapse Time:",end-start)
 all_selected.to_csv("selected.csv")
 all_crossover.to_csv("crossover.csv")
 all_mutate.to_csv("mutate.csv")

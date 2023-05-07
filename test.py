@@ -5,7 +5,7 @@ from mlmodel import DT, predict_DT
 from RD import check
 from error import errorcheck, errorcheck2
 import numpy as np
-
+import time as tm
 
 ###### Before use test.py -> run mlmodel.py -> run RD.py ########
 
@@ -13,8 +13,8 @@ import numpy as np
 # LowerBound = float(input("Lower TEMPARETURE range IS: "))
 # UpperBound = float(input("Upper TEMPARETURE range IS: "))
 
-LowerBound = 350
-UpperBound = 355
+LowerBound = 250
+UpperBound = 255
 
 #add percentage error 
 def errorcheck(data):
@@ -103,8 +103,10 @@ def crossover(parent):
             # print(f"the crossover point for parents {i+1} and {j+1} is {pt}")
             off1 = np.concatenate((p1[:pt], p2[pt:]))
             off2 = np.concatenate((p2[:pt], p1[pt:]))
-            offspring.append(off1)
-            offspring.append(off2)
+            if check(off1):
+                offspring.append(off1)
+            if check(off2):
+                offspring.append(off2)
     offspring_pd = pd.DataFrame(offspring, columns=["C", "Double", "Triple", "Bracket", "Cyclic"])
     return offspring_pd
 
@@ -155,13 +157,14 @@ def mutate(selected):
         mut = selected.iloc[index].to_numpy()
         mut = mut.T
         if rng < 3:
-            mutated_rows = mutated_rows.append(selected.iloc[index], ignore_index=True)
+            if check(mut):
+                mutated_rows = mutated_rows.append(selected.iloc[index], ignore_index=True)
         else:
             rng = rnd(1, 10)
             if rng > 0:
                 c = rnd(mut[0] - 3, mut[0] + 3)
                 if c < 0:
-                    c=0
+                    c=1
             elif rng == 7:
                 mut[1] = rnd(0, mut[0] - 1)
             elif rng == 8:
@@ -174,7 +177,8 @@ def mutate(selected):
             new = np.vstack((mut, temp))
             mutated_row = pd.DataFrame(new, columns=["C", "Double", "Triple", "Bracket", "Cyclic"])
             mutated_row = mutated_row.drop([1])
-            mutated_rows = mutated_rows.append(mutated_row, ignore_index=True)
+            if check(mutated_row):
+                mutated_rows = mutated_rows.append(mutated_row, ignore_index=True)
     return mutated_rows
 # print("Mutate") 
 # check3=mutate(check2)
@@ -259,6 +263,8 @@ all_mutate = pd.DataFrame()
 
 dataset.to_csv("random_Tb.csv")
 iteration = 100
+minerr = 0
+start = tm.time()
 for loop in range(iteration):
     print("loop", loop+1)
     iter_pd = pd.DataFrame(["iterration",(loop+1)])
@@ -275,7 +281,7 @@ for loop in range(iteration):
     print("and error is")
     print(selected["Error"].iloc[:5])
     
-    if error[0] > 0:
+    if selected["Error"].iloc[0] > minerr:
         check2 = crossover(selected)
         check2["Predict"] = predict_DT(check2)
         # check2 = rank_selection2(check2)
@@ -290,8 +296,8 @@ for loop in range(iteration):
         print("and error is")
         print(check2["Error"].iloc[:5])
         
-        if error[0] > 0:
-            check3 = mutate(selected.copy())
+        if check2["Error"].iloc[0] > minerr:
+            check3 = mutate(check2.copy())
             check3["Predict"] = predict_DT(check3)
             error = errorcheck(check3)
             check3["Error"] = error
@@ -305,13 +311,13 @@ for loop in range(iteration):
             
             check2 = pd.concat([check2, check3])
             
-            if error[0] > 0:
+            if check2["Error"].iloc[0] > minerr:
                 dataset=check2
                 continue   
             else:
-                if check(check3):
+                if check(check3.iloc[0]):
                     print("The SMILES Solution is")
-                    print(check3)
+                    print(check3.loc[check3['Error'] <= minerr])
                     print("The iteration is", loop+1)
                     break
                 else:
@@ -320,7 +326,7 @@ for loop in range(iteration):
         else:
             if check(check2.iloc[0]):
                 print("The SMILES Solution is")
-                print(check2.iloc[0])
+                print(check2.loc[check2["Error"] <= minerr])
                 print("The iteration is", loop+1)
                 break
             else:
@@ -330,7 +336,7 @@ for loop in range(iteration):
         print("passed")
         if check(selected.iloc[0]):
             print("The SMILES Solution is")
-            print(selected.iloc[0])
+            print(selected.loc[selected["Error"] <= minerr])
             print("The iteration is", loop+1)
             break
         else:
@@ -339,12 +345,14 @@ for loop in range(iteration):
 else:
     print("Maximum number of iterations reached.")
     if check(dataset.iloc[0]) == True:
-            print("The SMILES Solution is")
+            print("The closest SMILES Solution is")
             print(selected.iloc[0])
-            print("The iteration is",loop)
+            print("The iteration is",loop+1)
     else:
         print("No result was found")
 
+end = tm.time()
+print("Elapse Time:",end-start)
 all_selected.to_csv("selected_tb.csv")
 all_crossover.to_csv("crossover_tb.csv")
 all_mutate.to_csv("mutate_tb.csv")
